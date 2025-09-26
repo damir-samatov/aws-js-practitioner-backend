@@ -1,14 +1,18 @@
 {
-  "name": "aws-js-practitioner-backend",
+  "name": "infra",
   "version": "0.1.0",
   "bin": {
-    "aws-js-practitioner-backend": "bin/aws-js-practitioner-backend.js"
+    "infra": "bin/infra.js"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "build:deploy": "npm run build && npm run infra:deploy",
+    "infra:synth": "cdk synth",
+    "infra:deploy": "cdk deploy",
+    "infra:destroy": "cdk destroy"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
