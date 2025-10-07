@@ -3,9 +3,15 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "paths": {
+      "/opt/*": [
+        "./lib/layers/nodejs/*"
+      ]
+    },
     "lib": [
       "es2022"
     ],
+    "esModuleInterop": true,
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
