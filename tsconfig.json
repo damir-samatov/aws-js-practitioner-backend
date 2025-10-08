@@ -1,16 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "paths": {
-      "/opt/*": [
-        "./lib/layers/nodejs/*"
-      ]
-    },
-    "lib": [
-      "es2022"
-    ],
+    "module": "commonjs",
     "esModuleInterop": true,
     "declaration": true,
     "strict": true,
@@ -28,7 +19,8 @@
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "typeRoots": [
-      "./node_modules/@types"
+      "./node_modules/@types",
+      "./types"
     ]
   },
   "exclude": [
