@@ -1,5 +1,5 @@
 import {App} from 'aws-cdk-lib';
-import {LambdaStack} from '../lib/lambda-stack';
+import {ProductStack} from "../lib/product-service/product-stack";
 
 const app = new App();
-new LambdaStack(app, 'LambdaStack', {});
+new ProductStack(app, 'product-stack');

@@ -4,3 +4,8 @@ export type Product = {
     description: string;
     price: number;
 }
+
+export type Stock = {
+    product_id: string;
+    count: number;
+}
