@@ -32,7 +32,7 @@ export class ProductService extends Construct {
             memorySize: 1024,
             timeout: Duration.seconds(5),
             handler: 'get-products.getProducts',
-            code: lambda.Code.fromAsset(path.join(__dirname, '../lib/product-service/handlers')),
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../dist/lib/product-service/handlers')),
             environment: {
                 PRODUCT_TABLE_NAME,
                 STOCK_TABLE_NAME,
@@ -44,7 +44,7 @@ export class ProductService extends Construct {
             memorySize: 1024,
             timeout: Duration.seconds(5),
             handler: 'get-product-by-id.getProductById',
-            code: lambda.Code.fromAsset(path.join(__dirname, '../lib/product-service/handlers')),
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../dist/lib/product-service/handlers')),
             environment: {
                 PRODUCT_TABLE_NAME,
                 STOCK_TABLE_NAME,
@@ -56,7 +56,7 @@ export class ProductService extends Construct {
             memorySize: 1024,
             timeout: Duration.seconds(5),
             handler: 'create-product.createProduct',
-            code: lambda.Code.fromAsset(path.join(__dirname, '../lib/product-service/handlers')),
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../dist/lib/product-service/handlers')),
             environment: {
                 PRODUCT_TABLE_NAME,
                 STOCK_TABLE_NAME,

@@ -1,3 +1,5 @@
-export const FRONTEND_URL = "https://d3ajc1jpjqz77h.cloudfront.net"
+export const FRONTEND_URL = "https://d1q8poe4mvoaix.cloudfront.net"
 export const PRODUCT_TABLE_NAME = "Product"
 export const STOCK_TABLE_NAME = "Stock"
+export const UPLOADED_BUCKET_FOLDER = "uploaded/"
+export const PARSED_BUCKET_FOLDER = "parsed/"
