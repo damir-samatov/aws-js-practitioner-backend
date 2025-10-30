@@ -2,6 +2,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult, Handler} from "aws-lambda";
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb";
 import {DynamoDBDocument} from "@aws-sdk/lib-dynamodb";
 import {createResponse} from "../../../shared/utils";
+import {ENV_MISSING_ERROR, INTERNAL_SERVER_ERROR} from "../../../shared/constants";
 
 const client = new DynamoDBClient({region: process.env.AWS_REGION});
 const dynamoDBDocClient = DynamoDBDocument.from(client);
@@ -10,10 +11,17 @@ export const getProducts: Handler<APIGatewayProxyEvent, APIGatewayProxyResult> =
     event,
     context
 ) => {
-    try {
-        console.log("Event:", JSON.stringify(event, null, 2));
-        console.log("Context:", JSON.stringify(context, null, 2));
+    console.log("Event: ", event);
+    console.log("Context: ", context);
 
+    if (
+        !process.env.PRODUCT_TABLE_NAME ||
+        !process.env.STOCK_TABLE_NAME
+    ) {
+        throw new Error(ENV_MISSING_ERROR);
+    }
+
+    try {
         const productsResult = await dynamoDBDocClient.scan({
             TableName: process.env.PRODUCT_TABLE_NAME,
         });
@@ -41,10 +49,8 @@ export const getProducts: Handler<APIGatewayProxyEvent, APIGatewayProxyResult> =
 
         return createResponse(200, productsWithStock);
     } catch (error) {
-        console.error("Error retrieving products:", error);
+        console.error("Error:", error);
 
-        return createResponse(500, {
-            message: "Internal server error",
-        });
+        return createResponse(500, {message: INTERNAL_SERVER_ERROR});
     }
 };

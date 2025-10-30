@@ -12,13 +12,24 @@ import {
     aws_s3,
     Duration,
     RemovalPolicy,
-    aws_s3_notifications
+    aws_s3_notifications, aws_sqs,
 } from "aws-cdk-lib";
 import path from "path";
 import {HttpMethods} from "aws-cdk-lib/aws-s3";
 
+const DEFAULT_LAMBDA_CONFIG = {
+    runtime: aws_lambda.Runtime.NODEJS_20_X,
+    memorySize: 1024,
+    timeout: Duration.seconds(5),
+    code: aws_lambda.Code.fromAsset(path.join(__dirname, '../../dist/lib/import-csv-service/handlers')),
+}
+
+type ImportCsvServiceProps = {
+    createBatchProductsSqs: aws_sqs.Queue;
+}
+
 export class ImportCsvService extends Construct {
-    constructor(scope: Construct, id: string) {
+    constructor(scope: Construct, id: string, props: ImportCsvServiceProps) {
         super(scope, id);
 
         const s3Bucket = new aws_s3.Bucket(this, "import-csv-bucket", {
@@ -34,11 +45,8 @@ export class ImportCsvService extends Construct {
         });
 
         const importCsvLambda = new aws_lambda.Function(this, "import-csv-lambda", {
-            runtime: aws_lambda.Runtime.NODEJS_20_X,
-            memorySize: 1024,
-            timeout: Duration.seconds(5),
+            ...DEFAULT_LAMBDA_CONFIG,
             handler: "import-csv.importCsv",
-            code: aws_lambda.Code.fromAsset(path.join(__dirname, "../../dist/lib/import-csv-service/handlers")),
             environment: {
                 BUCKET_NAME: s3Bucket.bucketName,
                 UPLOADED_BUCKET_FOLDER,
@@ -48,17 +56,16 @@ export class ImportCsvService extends Construct {
         s3Bucket.grantPut(importCsvLambda);
 
         const parseCsvLambda = new aws_lambda.Function(this, "parse-csv-lambda", {
-            runtime: aws_lambda.Runtime.NODEJS_20_X,
-            memorySize: 1024,
-            timeout: Duration.seconds(5),
+            ...DEFAULT_LAMBDA_CONFIG,
             handler: "parse-csv.parseCsv",
-            code: aws_lambda.Code.fromAsset(path.join(__dirname, "../../dist/lib/import-csv-service/handlers")),
             environment: {
-                BUCKET_NAME: s3Bucket.bucketName,
                 UPLOADED_BUCKET_FOLDER,
                 PARSED_BUCKET_FOLDER,
+                CREATE_BATCH_PRODUCTS_SQS_URL: props.createBatchProductsSqs.queueUrl,
             },
         });
+
+        props.createBatchProductsSqs.grantSendMessages(parseCsvLambda);
 
         s3Bucket.grantReadWrite(parseCsvLambda);
 
