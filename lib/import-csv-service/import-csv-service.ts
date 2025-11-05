@@ -26,6 +26,7 @@ const DEFAULT_LAMBDA_CONFIG = {
 
 type ImportCsvServiceProps = {
     createBatchProductsSqs: aws_sqs.Queue;
+    basicAuthorizerLambda: aws_lambda.Function;
 }
 
 export class ImportCsvService extends Construct {
@@ -75,6 +76,17 @@ export class ImportCsvService extends Construct {
             {prefix: UPLOADED_BUCKET_FOLDER}
         );
 
+        const basicAuthorizerLambda = aws_lambda.Function.fromFunctionAttributes(this, "basic-authorizer-lambda", {
+            functionArn: props.basicAuthorizerLambda.functionArn,
+            sameEnvironment: true,
+        });
+
+        const basicAuthorizer = new aws_apigateway.TokenAuthorizer(this, 'basic-authorizer', {
+            authorizerName: 'basic-authorizer',
+            handler: basicAuthorizerLambda,
+            identitySource: aws_apigateway.IdentitySource.header('Authorization'),
+        });
+
         const api = new aws_apigateway.RestApi(this, "import-csv-service-api", {
             restApiName: "Import API",
             description: "APIs for import",
@@ -87,6 +99,8 @@ export class ImportCsvService extends Construct {
 
         const importResource = api.root.addResource("import");
         const productsLambdaIntegration = new aws_apigateway.LambdaIntegration(importCsvLambda);
-        importResource.addMethod("GET", productsLambdaIntegration);
+        importResource.addMethod("GET", productsLambdaIntegration, {
+            authorizer: basicAuthorizer,
+        });
     }
 }
