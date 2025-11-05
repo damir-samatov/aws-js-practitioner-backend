@@ -7,4 +7,13 @@ export const productCreateDtoSchema = z.object({
     count: z.number().int().min(1),
 });
 
+export const productCreateCsvDtoSchema = z.object({
+    title: z.string(),
+    description: z.string(),
+    price: z.string(),
+    count: z.string(),
+});
+
 export type ProductCreateDto = z.infer<typeof productCreateDtoSchema>;
+
+export type ProductCreateCsvDto = z.infer<typeof productCreateCsvDtoSchema>;

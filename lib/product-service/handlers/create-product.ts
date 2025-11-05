@@ -4,15 +4,24 @@ import {DynamoDBDocument} from "@aws-sdk/lib-dynamodb";
 import {v4 as uuid} from "uuid";
 import {z} from "zod";
 import {createResponse} from "../../../shared/utils";
+import {productCreateDtoSchema} from "../../../shared/create-product-dto-schema";
+import {ENV_MISSING_ERROR, INTERNAL_SERVER_ERROR} from "../../../shared/constants";
 
 const dynamoDBClient = new DynamoDBClient({region: process.env.AWS_REGION});
 const dynamoDBDocClient = DynamoDBDocument.from(dynamoDBClient);
 
 export const createProduct: Handler<APIGatewayProxyEvent, APIGatewayProxyResult> = async (event, context) => {
-    try {
-        console.log("Event: ", event);
-        console.log("Context: ", context);
+    console.log("Event: ", event);
+    console.log("Context: ", context);
 
+    if (
+        !process.env.PRODUCT_TABLE_NAME ||
+        !process.env.STOCK_TABLE_NAME
+    ) {
+        throw new Error(ENV_MISSING_ERROR);
+    }
+
+    try {
         if (!event.body) {
             return createResponse(400, {
                 data: {
@@ -21,7 +30,9 @@ export const createProduct: Handler<APIGatewayProxyEvent, APIGatewayProxyResult>
             });
         }
 
-        const body = JSON.parse(event.body);
+        const body: unknown = JSON.parse(event.body);
+
+        const productDto = productCreateDtoSchema.parse(body);
 
         const id = uuid();
 
@@ -32,9 +43,9 @@ export const createProduct: Handler<APIGatewayProxyEvent, APIGatewayProxyResult>
                         TableName: process.env.PRODUCT_TABLE_NAME,
                         Item: {
                             id,
-                            title: body.title,
-                            description: body.description,
-                            price: body.price,
+                            title: productDto.title,
+                            description: productDto.description,
+                            price: productDto.price,
                         },
                     },
                 },
@@ -43,7 +54,7 @@ export const createProduct: Handler<APIGatewayProxyEvent, APIGatewayProxyResult>
                         TableName: process.env.STOCK_TABLE_NAME,
                         Item: {
                             product_id: id,
-                            count: body.count,
+                            count: productDto.count,
                         },
                     },
                 },
@@ -57,12 +68,12 @@ export const createProduct: Handler<APIGatewayProxyEvent, APIGatewayProxyResult>
             },
         });
     } catch (error) {
-        console.error("Error:", error);
-
         if (error instanceof z.ZodError) {
             return createResponse(400, {data: {message: error.message}});
         }
+        
+        console.error("Error:", error);
 
-        return createResponse(500, {data: {message: "Internal server error"}});
+        return createResponse(500, {message: INTERNAL_SERVER_ERROR});
     }
 };
